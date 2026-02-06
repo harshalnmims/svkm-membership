@@ -1,0 +1,60 @@
+
+
+version: '3.8'
+services:
+#==================================================================backend=======================================
+  backend:
+    image: membership_backend:latest
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: membership-backend-UAT
+    # depends_on:
+    #   - kafka
+    ports:
+      - "3000:3000"
+    restart: always
+    volumes:
+      - ./backend/logs:/app/logs
+    # env_file:
+    #    - ./frontend/.env
+    environment:
+      - DB_URL=jdbc:postgresql://host.docker.internal:5432/membership
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=root
+      - REDIS_HOST=host.docker.internal
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=yourredispassword
+    # secrets:
+    #   - db_password
+    #   - redis_password
+    # configs:
+    #   - source: app_config
+    #     target: /app/config/app_config.yml
+    networks:
+      - membership
+    # depends_on:
+    #   - mongo
+
+#==================================================================frontend=======================================
+  frontend:
+    image: membership_frontend:latest
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: membership-frontend_UAT
+    # environment:
+    #   - development
+    ports:
+      - "4173:4173"
+    env_file:
+       - ./frontend/.env
+    depends_on:
+      - backend
+      # - mongo
+    restart: always
+    #extends:
+     # file: common-config.yml
+      #service: network-deploy-service
+    networks:
+      - membership
